@@ -1,8 +1,6 @@
 import amqp from "amqplib";
-import { PrismaClient } from "@prisma/client";
-const amqpServer = "amqp://localhost:5672";
 
-const prisma = new PrismaClient();
+const amqpServer = "amqp://localhost:5672";
 
 export const publishConnection = async (queue: string, data: any) => {
   try {
@@ -24,30 +22,7 @@ export const consumeConnection = async (queue: string) => {
     await channel.consume(queue, async (message: any) => {
       const myData = JSON.parse(message.content.toString());
 
-      // console.log(myData);
-
-      const account: any = await prisma.crowdAbeg.findUnique({
-        where: { id: myData?.abegID },
-      });
-
-      // console.log(account);
-
-      account?.givers.push(myData);
-
-      const prof = await prisma.crowdAbeg.update({
-        where: { id: myData?.abegID },
-        data: {
-          givers: account?.givers,
-          amountNeeded: account.amountNeeded - myData.amount,
-          amountRaised: account.amountRaised + myData.amount,
-        },
-      });
-
-      console.log(account.amountNeeded);
-      console.log(myData.amount);
-
-      console.log(prof);
-
+      console.log(myData);
       await channel.ack(message);
     });
   } catch (error) {

@@ -6,7 +6,7 @@ import { consumeAbegConnection, consumeConnection } from "./utils/connection";
 const port: number = 3300;
 const app: Application = express();
 
-app.use(cors());
+app.use(cors({ origin: "*" }));
 app.use(express.json());
 
 app.use("/api", auth);

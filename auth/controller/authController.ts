@@ -58,6 +58,26 @@ export const allAccount = async (req: Request, res: Response) => {
   }
 };
 
+export const getSingleAccount = async (req: Request, res: Response) => {
+  try {
+    const { accountID } = req.params;
+
+    const account = await prisma.crowdAuth.findUnique({
+      where: { id: accountID },
+    });
+
+    return res.status(200).json({
+      message: "Viewing single Account",
+      data: account,
+    });
+  } catch (error) {
+    return res.status(404).json({
+      message: "Error",
+      data: error,
+    });
+  }
+};
+
 export const firstAccountVerification = async (req: Request, res: Response) => {
   try {
     const { secretKey } = req.body;
