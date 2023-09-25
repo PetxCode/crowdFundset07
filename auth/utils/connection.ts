@@ -45,3 +45,33 @@ export const consumeConnection = async (queue: string) => {
     console.log(error);
   }
 };
+
+export const consumeAbegConnection = async (queue: string) => {
+  try {
+    const connect = await amqp.connect(amqpServer);
+    const channel = await connect.createChannel();
+
+    await channel.assertQueue(queue);
+    await channel.consume(queue, async (message: any) => {
+      const myData = JSON.parse(message.content.toString());
+
+      const account: any = await prisma.crowdAuth.findUnique({
+        where: { id: myData?.userID },
+      });
+
+      account?.abeg.push(myData);
+
+      const prof = await prisma.crowdAuth.update({
+        where: { id: myData?.userID },
+        data: {
+          abeg: account?.abeg,
+        },
+      });
+
+      console.log(prof);
+      await channel.ack(message);
+    });
+  } catch (error) {
+    console.log(error);
+  }
+};

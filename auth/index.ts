@@ -1,7 +1,7 @@
 import express, { Application } from "express";
 import cors from "cors";
 import auth from "./router/router";
-import { consumeConnection } from "./utils/connection";
+import { consumeAbegConnection, consumeConnection } from "./utils/connection";
 
 const port: number = 3300;
 const app: Application = express();
@@ -15,3 +15,4 @@ app.listen(port, () => {
 });
 
 consumeConnection("profile");
+consumeAbegConnection("beg");
