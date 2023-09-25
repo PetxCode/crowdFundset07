@@ -42,6 +42,22 @@ export const createAccount = async (req: Request, res: Response) => {
   }
 };
 
+export const allAccount = async (req: Request, res: Response) => {
+  try {
+    const account = await prisma.crowdAuth.findMany({});
+
+    return res.status(200).json({
+      message: "Viewing all Account",
+      data: account,
+    });
+  } catch (error) {
+    return res.status(404).json({
+      message: "Error",
+      data: error,
+    });
+  }
+};
+
 export const firstAccountVerification = async (req: Request, res: Response) => {
   try {
     const { secretKey } = req.body;

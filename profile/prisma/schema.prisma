@@ -1,0 +1,35 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model crowdProile {
+  id String @id @default(uuid())
+
+  userID String
+  email String
+
+  fullName String
+  userName String
+
+  telNumb String?
+  description String?
+
+  walletBalance Int
+  
+  avatar String?
+  avatarID String?
+  
+  companyName String?
+  companyRole String?
+  companyLocation String?
+
+  history Json
+}
