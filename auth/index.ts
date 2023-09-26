@@ -5,6 +5,7 @@ import passport from "passport";
 import "./utils/social";
 import cookieSession from "cookie-session";
 import { consumeAbegConnection, consumeConnection } from "./utils/connection";
+import jwt from "jsonwebtoken";
 
 const port: number = 3300;
 const app: Application = express();
@@ -58,8 +59,13 @@ app.get(
   function (req, res) {
     // Successful authentication, redirect home.
     // res.redirect("/");
+    const user: any = req.user;
+
+    const token = jwt.sign({ id: user.id, email: user.email }, "secret");
+
     res.status(200).json({
       message: "Well done...!",
+      data: token,
     });
   }
 );

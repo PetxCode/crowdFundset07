@@ -29,18 +29,15 @@ passport.use(
       try {
         if (profile.id_token) {
           const data: any = decode(profile.id_token);
+          console.log(data);
           if (data) {
             const user = await prisma.crowdAuth.findUnique({
               where: { email: data.email },
             });
 
             if (user) {
-              console.log("User Present");
-
               return callback(null, user);
             } else {
-              console.log("User not found");
-
               const newUser = await prisma.crowdAuth.create({
                 data: {
                   email: data.email,
@@ -59,42 +56,28 @@ passport.use(
             console.log("check Token...");
           }
         } else {
-          const data = profile._json.email;
-          if (data) {
-            const user = await prisma.crowdAuth.findUnique({
-              where: { email: data },
+          const user = await prisma.crowdAuth.findUnique({
+            where: { email: profile._json.email },
+          });
+
+          if (user) {
+            return callback(null, user);
+          } else {
+            const newUser = await prisma.crowdAuth.create({
+              data: {
+                email: profile._json.email,
+                password: "",
+                secretKey: "er45",
+                token: "",
+                verify: true,
+                abeg: [],
+                profile: [],
+              },
             });
 
-            if (user) {
-              console.log("User Present");
-
-              return callback(null, user);
-            } else {
-              console.log("User not found");
-
-              const newUser = await prisma.crowdAuth.create({
-                data: {
-                  email: data.email,
-                  password: "",
-                  secretKey: "er45",
-                  token: "",
-                  verify: data.email_verified,
-                  abeg: [],
-                  profile: [],
-                },
-              });
-
-              return callback(null, newUser);
-            }
-          } else {
-            console.log("check Token...");
+            return callback(null, newUser);
           }
         }
-
-        // const data: any = decode(profile.id_token);
-        // console.log(data.email);
-
-        // console.log(profile.emails[0].value);
       } catch (error) {
         console.log(error);
       }
