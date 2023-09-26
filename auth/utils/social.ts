@@ -1,7 +1,9 @@
 import passport from "passport";
 import GoogleStrate from "passport-google-oauth20";
 import { PrismaClient } from "@prisma/client";
-const GoogleStrategy = GoogleStrate.Strategy;
+
+const GoogleStrategy = require("passport-google-oauth20").Strategy;
+
 import decode from "jwt-decode";
 
 const prisma = new PrismaClient();
@@ -18,50 +20,84 @@ passport.use(
       callbackURL: "/auth/google/callback",
       scope: ["profile", "email"],
     },
-    async (
+    async function (
       accessToken: any,
       refreshToken: any,
       profile: any,
-      callback: any,
-      err: any
-    ) => {
-      const data: any = decode(profile.id_token);
-      console.log(data.email);
+      callback: any
+    ) {
+      try {
+        if (profile.id_token) {
+          const data: any = decode(profile.id_token);
+          if (data) {
+            const user = await prisma.crowdAuth.findUnique({
+              where: { email: data.email },
+            });
 
-      // console.log(profile.emails[0].value);
+            if (user) {
+              console.log("User Present");
 
-      const user = await prisma.crowdAuth.findUnique({
-        where: { email: data.email },
-      });
+              return callback(null, user);
+            } else {
+              console.log("User not found");
 
-      if (user) {
-        console.log("User Present");
+              const newUser = await prisma.crowdAuth.create({
+                data: {
+                  email: data.email,
+                  password: "",
+                  secretKey: "er45",
+                  token: "",
+                  verify: data.email_verified,
+                  abeg: [],
+                  profile: [],
+                },
+              });
 
-        return callback(err, user);
-      } else {
-        console.log("User not found");
+              return callback(null, newUser);
+            }
+          } else {
+            console.log("check Token...");
+          }
+        } else {
+          const data = profile._json.email;
+          if (data) {
+            const user = await prisma.crowdAuth.findUnique({
+              where: { email: data },
+            });
 
-        const newUser = await prisma.crowdAuth.create({
-          data: {
-            email: data.email,
-            password: "",
-            secretKey: "er45",
-            token: "",
-            verify: data.email_verified,
-            abeg: [],
-            profile: [],
-          },
-        });
+            if (user) {
+              console.log("User Present");
 
-        return callback(err, newUser);
+              return callback(null, user);
+            } else {
+              console.log("User not found");
+
+              const newUser = await prisma.crowdAuth.create({
+                data: {
+                  email: data.email,
+                  password: "",
+                  secretKey: "er45",
+                  token: "",
+                  verify: data.email_verified,
+                  abeg: [],
+                  profile: [],
+                },
+              });
+
+              return callback(null, newUser);
+            }
+          } else {
+            console.log("check Token...");
+          }
+        }
+
+        // const data: any = decode(profile.id_token);
+        // console.log(data.email);
+
+        // console.log(profile.emails[0].value);
+      } catch (error) {
+        console.log(error);
       }
-
-      // return cb;
-
-      // User.findOrCreate({ googleId: profile.id },  (err:any, user:any) => {
-
-      //   return cb;
-      // });
     }
   )
 );
